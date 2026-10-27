@@ -1,0 +1,16 @@
+<h1>Мои задачи</h1>
+{% for task in tasks %}
+<p>{{ task.name }}</p>
+<p>{{ task.done }}</p>
+{% if task.done %}
+<p>Выполнена</p>
+{% else %}
+<p>Не Выполнена</p>
+{% endif %}
+{% endfor %}
+
+<form method="Post">
+    {% csrf_token %}
+    <input type="text" name="task_name">
+    <button type="submit">Добавить</button>
+</form>

@@ -33,12 +33,45 @@ class TaskApiTests(APITestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_delete_task(self):
-        task = Tasks.objects.create(name="Buy Whiskey", owner= self.user)
+        task = Tasks.objects.create(name="Buy Whiskey", owner=self.user)
         self.client.force_authenticate(user=self.user)
         response = self.client.delete(f"/api/tasks/{task.id}/")
         self.assertEqual(response.status_code, 204)
         response = self.client.get(f"/api/tasks/{task.id}/")
         self.assertEqual(response.status_code, 404)
+
+    def test_only_one_task(self):
+        task = Tasks.objects.create(name="Buy Whiskey", owner=self.user)
+        task2 = Tasks.objects.create(name="Buy Thekila", owner=self.other)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get("/api/tasks/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        
+
+    def test_get_my_task(self):
+        task = Tasks.objects.create(name="Buy Whiskey", owner=self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(f"/api/tasks/{task.id}/")
+        self.assertEqual(response.status_code, 200)
+ 
+
+    def test_patch(self):
+        task = Tasks.objects.create(name="Buy Whiskey", owner=self.user)
+        self.client.force_authenticate(user= self.user)
+        response = self.client.patch(f"/api/tasks/{task.id}/", {"done": True}, format="json")
+        self.assertEqual(response.status_code, 200)
+        task.refresh_from_db()
+        self.assertEqual(task.done, True )
+
+    def test_patch2(self):
+        task = Tasks.objects.create(name="Buy Whiskey", owner=self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.patch(f"/api/tasks/{task.id}/", {"name": ""}, format="json")
+        self.assertEqual(response.status_code, 400)
+        
+
+        
 
 
 
